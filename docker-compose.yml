@@ -1,0 +1,21 @@
+# Start:  docker compose up --build        then open http://localhost:8000
+# Tests:  docker compose run --rm taskly python -m pytest
+# Reset:  docker compose down -v           (deletes the database and voice notes)
+services:
+  taskly:
+    build: .
+    ports:
+      - "8000:8000"          # use localhost: browsers only allow the microphone on localhost or HTTPS
+    env_file:
+      - path: .env           # optional: API keys etc. (copy .env.example to .env)
+        required: false
+    environment:
+      TASKLY_DATA_DIR: /data
+    volumes:
+      - taskly-data:/data    # database + audio survive restarts
+      - ./app:/srv/app       # edit code on your machine and the container sees it
+      - ./tests:/srv/tests
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload   # restarts on code changes
+
+volumes:
+  taskly-data:
